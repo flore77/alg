@@ -2,7 +2,7 @@
 #define __GAME_H__
 
 #define WALL_POSITION 15
-#define MaxN 32
+#define MaxS (37*37*4)
 
 class Game {
 public:
@@ -24,7 +24,7 @@ public:
 	int _aggresiveModeStart;
 	int _maxMove;
 	int _N, _M;
-	int _board[MaxN][MaxN];
+	int _board[MaxS];
 };
 
 #endif

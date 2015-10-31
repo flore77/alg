@@ -20,15 +20,15 @@ void Game::readGameStateFromServerInput(int * bytestream) {
 }
 
 bool Game::isWall(int x, int y) {
-	return (_board[y][x] & (1 << WALL_POSITION)) != 0;
+	return (_board[y * _M + x] & (1 << WALL_POSITION)) != 0;
 }
 
 int Game::getFlameDuration(int x, int y) {
-	return (_board[y][x] >> 16) & 0x000000FF;
+	return (_board[y * _M + x] >> 16) & 0x000000FF;
 }
 
 int Game::getExplosionTime(int x, int y) {
-	return (_board[y][x] >> 24) & 0x000000FF;
+	return (_board[y * _M + x] >> 24) & 0x000000FF;
 }
 
 void Game::prettyPrint() {
