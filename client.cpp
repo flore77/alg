@@ -55,6 +55,7 @@ int main(int argc, char *argv[]) {
   maxFd = serverFd;
 
 	Game g;
+	int bytes = 0, received = 0;
 
   while(1) {
     auxReadFds = readFds;
@@ -71,15 +72,20 @@ int main(int argc, char *argv[]) {
 
         // If the socket descriptor is equal to the server descriptor, there is
         // data from our server.
-        cout << "HERE!" << endl;
         if (i == serverFd) {
-			
-          if (recv(i, buffer, N, 0) < 0) {
-          
+					received = recv(i, buffer + bytes, N, 0);
+					bytes += received;
+
+          if (received < 0) {
+						cout << "mare eroare " << received << endl;
           } else {
-						//cout << buffer << endl;
-						g.readGameStateFromServerInput((int *)buffer);
-						g.prettyPrint();
+						if (bytes == 1040) {
+							bytes = 0;
+							g.readGameStateFromServerInput((int *)buffer);
+							g.prettyPrint();
+						} else {
+							
+						}
 					}
         }
       }
