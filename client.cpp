@@ -66,10 +66,14 @@ int main(int argc, char *argv[]) {
 
         // If the socket descriptor is equal to the server descriptor, there is
         // data from our server.
+        cout << "HERE!" << endl;
         if (i == serverFd) {
+			
           if (recv(i, buffer, 1000, 0) < 0) {
-            cout << buffer << endl;
-          }
+          
+          } else {
+			  cout << buffer << endl;  
+		  }
         }
       }
     }
