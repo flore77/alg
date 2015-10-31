@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 #include <string.h>
 #include <stdlib.h>
 
@@ -18,6 +19,12 @@ using namespace std;
  * Usage ./client ip port
  *
  */
+
+FILE * mylog = fopen("mylog.txt", "a");
+
+void log(string s) {
+	fprintf(mylog, "%s\n", (char *)s.c_str());
+}
 
 int main(int argc, char *argv[]) {
   int serverFd, port, maxFd;
@@ -56,6 +63,8 @@ int main(int argc, char *argv[]) {
 
 	Game g;
 	int bytes = 0, received = 0;
+	bool firstTime = true, secondTime = true;
+	int bytesToRead = -1;
 
   while(1) {
     auxReadFds = readFds;
@@ -76,21 +85,67 @@ int main(int argc, char *argv[]) {
 					received = recv(i, buffer + bytes, N, 0);
 					bytes += received;
 
-          if (received < 0) {
-						cout << "mare eroare " << received << endl;
-          } else {
-						if (bytes == 1040) {
+					//log(to_string(received));
+					printf("%d\n", received);
+					if (received == 0) {
+						log("Programul s-a terminat!");
+						return 0;
+					} else if (received < 0) {
+						log("eroare de la server");
+						error("eroare de la server");
+						return -1;
+					} else {
+						if (firstTime) {
+							cout << "your id is " << *((int *)buffer)  << endl;
+							g.readId((int *)buffer);
+							firstTime = false;
 							bytes = 0;
-							g.readGameStateFromServerInput((int *)buffer);
-							g.prettyPrint();
 						} else {
 							
+							if (secondTime) {
+								if (bytes < 20) continue;
+
+
+								g.readHeader((int *)buffer);
+								bytesToRead = 20 + g.getN() * g.getM();
+					
+								if (bytes >= bytesToRead) {
+									bytes = 0;
+									//g.readHeader((int *)buffer);
+									g.readMatrix((int *)(buffer + 20));
+									g.prettyPrint();
+									
+									if (bytes > bytesToRead) {
+										log("Ne-a dat mai mult decat matricea");
+										int k = 0;
+										for (int i = bytesToRead; i < bytes; ++i)
+											buffer[k++] = buffer[i];
+										bytes -= bytesToRead;
+									}
+								}
+
+								secondTime = false;
+							} else {
+								if (bytes >= bytesToRead) {
+									bytes = 0;
+									g.readHeader((int *)buffer);
+									g.readMatrix((int *)(buffer + 20));
+									g.prettyPrint();
+									
+									if (bytes > bytesToRead) {
+										log("Ne-a dat mai mult decat matricea");
+										int k = 0;
+										for (int i = bytesToRead; i < bytes; ++i)
+											buffer[k++] = buffer[i];
+										bytes -= bytesToRead;
+									}
+								}
+							}	
 						}
+						
 					}
         }
       }
     }
   }
-
-
 }

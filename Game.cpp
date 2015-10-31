@@ -8,7 +8,11 @@ Game::Game(int N, int M) : _N(N), _M(M) { }
 
 Game::~Game() { }
 
-void Game::readGameStateFromServerInput(int * bytestream) {
+void Game::readId(int * buffer) {
+	_myId = *buffer;
+}
+
+void Game::readHeader(int * bytestream) {
 	int * iter = bytestream;
 
 	_currentMove = *iter++;
@@ -16,7 +20,10 @@ void Game::readGameStateFromServerInput(int * bytestream) {
 	_maxMove = *iter++;
 	_N = *iter++;
 	_M = *iter++;
-	memcpy(_board, iter, _N * _M * sizeof(int));
+}
+
+void Game::readMatrix(int * bytestream) {
+	memcpy(_board, bytestream, _N * _M * sizeof(int));
 }
 
 bool Game::isWall(int x, int y) {
@@ -49,4 +56,12 @@ void Game::prettyPrint() {
 		}
 		std::cout << '\n';
 	}
+}
+
+int Game::getN() {
+	return _N;
+}
+
+int Game::getM() {
+	return _M;
 }

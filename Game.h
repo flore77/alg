@@ -10,8 +10,15 @@ public:
 	Game(int N, int M);
 	virtual ~Game();
 
-	void readGameStateFromServerInput(int *);
+	void readId(int *);
+	void readHeader(int *);
+	void readMatrix(int *);
+
 	void prettyPrint();
+
+	int getN();
+
+	int getM();
 //private:
 
 	bool isWall(int x, int y);
@@ -20,6 +27,7 @@ public:
 
 	int getExplosionTime(int x, int y);
 
+	int _myId;
 	int _currentMove;
 	int _aggresiveModeStart;
 	int _maxMove;
