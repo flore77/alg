@@ -9,6 +9,8 @@
 #include "Game.h"
 #include "helpers.h"
 
+#define N (37*37*4)
+
 using namespace std;
 
 /**
@@ -20,7 +22,7 @@ using namespace std;
 int main(int argc, char *argv[]) {
   int serverFd, port, maxFd;
   struct sockaddr_in server;
-  char ip[16], buffer[1024];
+  char ip[16], buffer[N];
   fd_set readFds, auxReadFds;
 
   // Setting the connection parameters.
@@ -72,7 +74,7 @@ int main(int argc, char *argv[]) {
         cout << "HERE!" << endl;
         if (i == serverFd) {
 			
-          if (recv(i, buffer, 1000, 0) < 0) {
+          if (recv(i, buffer, N, 0) < 0) {
           
           } else {
 						//cout << buffer << endl;

@@ -2,7 +2,7 @@
 #define __GAME_H__
 
 #define WALL_POSITION 15
-#define MaxS (37*37*4)
+#define MaxS (37*37)
 
 class Game {
 public:

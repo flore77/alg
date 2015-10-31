@@ -32,9 +32,12 @@ int Game::getExplosionTime(int x, int y) {
 }
 
 void Game::prettyPrint() {
+	static int count = 0;
 	std::cout << _currentMove << ' ' << _aggresiveModeStart << ' ' << _maxMove << std::endl;
 	std::cout << _N << ' ' << _M << std::endl;
+	count++;
 
+	if (count == 1) return;
 	for (int i = 0; i < _N; ++i) {
 		for (int j = 0; j < _M; ++j) {
 			if (isWall(j, i)) {
