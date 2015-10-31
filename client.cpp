@@ -19,12 +19,12 @@ using namespace std;
 int main(int argc, char *argv[]) {
   int serverFd, port, maxFd;
   struct sockaddr_in server;
-  char ip[16];
+  char ip[16], buffer[1024];
   fd_set readFds, auxReadFds;
 
   // Setting the connection parameters.
+  strcpy(ip, argv[1]);
   port = atoi(argv[2]);
-  strcpy(ip, argv[4]);
 
   // Open a TCP socket.
   if ((serverFd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -67,7 +67,9 @@ int main(int argc, char *argv[]) {
         // If the socket descriptor is equal to the server descriptor, there is
         // data from our server.
         if (i == serverFd) {
-
+          if (recv(i, buffer, 1000, 0) < 0) {
+            cout << buffer << endl;
+          }
         }
       }
     }
