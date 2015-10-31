@@ -125,6 +125,7 @@ int main(int argc, char *argv[]) {
 									g.prettyPrint();
 								
 									g.makeMove((int *)buffer);
+									printf("trimit %d%d\n", *((int*)buffer),*((int*)buffer+1));
 									if (send_all(serverFd, buffer, 8, 0) < 0) {
 										log("Eroare la send_all");
 										error("Eroare la send_all");
@@ -149,6 +150,7 @@ int main(int argc, char *argv[]) {
 									g.prettyPrint();
 
 									g.makeMove((int *)buffer);
+									printf("trimit %d%d\n", *((int*)buffer),*((int*)buffer+1));
 									if (send_all(serverFd, buffer, 8, 0) < 0) {
 										log("Eroare la send_all");
 										error("Eroare la send_all");

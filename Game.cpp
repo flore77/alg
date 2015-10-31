@@ -48,10 +48,11 @@ void Game::makeMove(int * buffer) {
 	++buffer;
 
 	if (rand() % 10 < 3) {
-		*buffer = 1 << 31;
+		//*buffer = 1 << 31;
 	}
 
-	*buffer = *buffer | (rand() % 4);
+	
+	*buffer = (rand() % 4);
 
 	++_moveCounter;
 }
@@ -62,15 +63,21 @@ void Game::prettyPrint() {
 	std::cout << _N << ' ' << _M << std::endl;
 	count++;
 
+	printf("myId = %d\n", _myId);
+
 	if (count == 1) return;
 	for (int i = 0; i < _N; ++i) {
 		for (int j = 0; j < _M; ++j) {
 			if (isWall(j, i)) {
 				std::cout << 'W';
-			} else {
-				std::cout << ' ';
 			}
-			std::cout << ' ';
+		  else if ((_board[i * _M + j] & 0x0000FF) == 0) {
+				std::cout << ' ';
+			} else if ((_board[i * _M + j] & (1 << (_myId - 1))) != 0) {
+				std::cout << 'E';
+			} else {
+				std::cout << _board[i * _M + j];
+			}
 		}
 		std::cout << '\n';
 	}
