@@ -6,6 +6,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include "Game.h"
 #include "helpers.h"
 
 using namespace std;
@@ -51,6 +52,8 @@ int main(int argc, char *argv[]) {
   // Set the maximal value of a file descriptor in the read set.
   maxFd = serverFd;
 
+	Game g;
+
   while(1) {
     auxReadFds = readFds;
 
@@ -72,8 +75,10 @@ int main(int argc, char *argv[]) {
           if (recv(i, buffer, 1000, 0) < 0) {
           
           } else {
-			  cout << buffer << endl;  
-		  }
+						//cout << buffer << endl;
+						g.readGameStateFromServerInput((int *)buffer);
+						g.prettyPrint();
+					}
         }
       }
     }

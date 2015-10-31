@@ -1,2 +1,2 @@
 build:
-	g++ client.cpp helper.cpp -std=c++11
+	g++ client.cpp helpers.cpp Game.cpp -std=c++11
