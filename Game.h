@@ -19,6 +19,8 @@ public:
 	int getN();
 
 	int getM();
+
+	void makeMove(int * buffer);
 //private:
 
 	bool isWall(int x, int y);
@@ -27,6 +29,7 @@ public:
 
 	int getExplosionTime(int x, int y);
 
+	int _moveCounter;	
 	int _myId;
 	int _currentMove;
 	int _aggresiveModeStart;

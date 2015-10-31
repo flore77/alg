@@ -1,8 +1,13 @@
 #include <iostream>
 #include <string.h>
+#include <time.h>
+#include <stdlib.h>
 #include "Game.h"
 
-Game::Game() { }
+
+Game::Game() { 
+	srand(time(NULL));
+}
 
 Game::Game(int N, int M) : _N(N), _M(M) { }
 
@@ -36,6 +41,19 @@ int Game::getFlameDuration(int x, int y) {
 
 int Game::getExplosionTime(int x, int y) {
 	return (_board[y * _M + x] >> 24) & 0x000000FF;
+}
+
+void Game::makeMove(int * buffer) {
+	*buffer = _moveCounter;
+	++buffer;
+
+	if (rand() % 10 < 3) {
+		*buffer = 1 << 31;
+	}
+
+	*buffer = *buffer | (rand() % 4);
+
+	++_moveCounter;
 }
 
 void Game::prettyPrint() {
