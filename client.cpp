@@ -85,8 +85,6 @@ int main(int argc, char *argv[]) {
 					received = recv(i, buffer + bytes, N, 0);
 					bytes += received;
 
-					//log(to_string(received));
-					printf("%d\n", received);
 					if (received == 0) {
 						log("Programul s-a terminat!");
 						return 0;
@@ -96,22 +94,19 @@ int main(int argc, char *argv[]) {
 						return -1;
 					} else {
 						if (firstTime) {
-							cout << "your id is " << *((int *)buffer)  << endl;
 							g.readId((int *)buffer);
 							firstTime = false;
 							bytes = 0;
 						} else {
-							
 							if (secondTime) {
 								if (bytes < 20) continue;
-
-
+								
 								g.readHeader((int *)buffer);
 								bytesToRead = 20 + g.getN() * g.getM();
 					
 								if (bytes >= bytesToRead) {
 									bytes = 0;
-									//g.readHeader((int *)buffer);
+									
 									g.readMatrix((int *)(buffer + 20));
 									g.prettyPrint();
 									
