@@ -3,6 +3,7 @@
 
 #include <utility>
 #include <queue>
+#include <algorithm>
 
 #define WALL_POSITION 15
 #define MaxS (37*37)
@@ -16,6 +17,9 @@
 #define RIGHT 1
 #define LEFT 3
 #define STAY 0
+
+#define MaxDanger 1000
+#define RADIUS 3
 
 #define MAX_DISTANCE 100000
 
@@ -48,6 +52,18 @@ public:
 
   std::pair<int, std::pair<int, int> > BFS();
   bool isValidMove(int x, int y);
+
+  //Danger.
+  void calculateDanger();
+  int getDanger(int, int);
+  void calculateEstimatedExplosionTime();
+  int getEstimatedExplosionTime(int, int);
+
+  // AI.
+  double survival(int, int);
+  double area(int, int);
+  double getScore(int, int, bool);
+  std::pair<int, bool> getBestMove();
 
 	std::pair<int, int> _myPosition;
 	std::pair<int, int> _opPosition;

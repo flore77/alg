@@ -4,12 +4,13 @@
 #include <stdlib.h>
 #include "Game.h"
 
+int _dangerMatrix[37][37];
 
 Game::Game() {
 	srand(time(NULL));
 }
 
-Game::Game(int N, int M) : _N(N), _M(M) { }
+Game::Game(int N, int M) : _N(N), _M(M) {}
 
 Game::~Game() { }
 
@@ -214,4 +215,193 @@ int Game::getN() {
 
 int Game::getM() {
 	return _M;
+}
+
+void Game::calculateDanger() {
+  int i, j, k;
+  int flameDuration, explosionTime;
+  for (i = 0; i < _N ; i++) { //i is column
+    for (j = 0; j < _M; j++) { //j is line
+      flameDuration = getFlameDuration(j, i);
+      explosionTime = getExplosionTime(j, i);
+
+      if (flameDuration > 1) {
+        _dangerMatrix[j][i] = MaxDanger;
+      }
+
+      if (explosionTime == 1 || (flameDuration > 0 && explosionTime > 0)) {
+        for (k = 1; k <= 6; k++) {
+          if (isWall(j + k, i)) break;
+          _dangerMatrix[j + k][i] = MaxDanger;
+        }
+        for (k = 1; k <= 6; k++) {
+          if (isWall(j, i + k)) break;
+          _dangerMatrix[j][i + k] = MaxDanger;
+        }
+        for (k = -1; k >= -6; k--) {
+          if (isWall(j - k, i)) break;
+          _dangerMatrix[j - k][i] = MaxDanger;
+        }
+        for (k = -1; k >= -6; k--) {
+          if (isWall(j, i - k)) break;
+          _dangerMatrix[j][i - k] = MaxDanger;
+        }
+      }
+    }
+  }
+}
+
+int Game::getDanger(int x, int y) {
+  return _dangerMatrix[y][x];
+}
+
+// complexitate mare!!
+void Game::calculateEstimatedExplosionTime() {
+  for (int i = 0; i < _N; ++i) {
+    for (int j = 0; j < _M; ++j) {
+      _dangerMatrix[i][j] = getExplosionTime(j, i);
+    }
+  }
+
+  for (int val = 1; val <= 10; ++val) {
+    for (int i = 0; i < _N; ++i) {
+      for (int j = 0; j < _M; ++j) {
+        if (_dangerMatrix[i][j] == val) {
+          for (int dy = -6; dy <= 6; ++dy) {
+            for (int dx = -6; dx <= 6; ++dx) {
+              if (dx == 0 && dy == 0) continue;
+
+              _dangerMatrix[i + dy][j + dx] = std::min(_dangerMatrix[i + dy][j + dx],
+                                                  _dangerMatrix[i][j] + 1);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+int Game::getEstimatedExplosionTime(int x, int y) {
+  return _dangerMatrix[y][x];
+}
+
+std::pair<int, bool> Game::getBestMove() {
+  double score;
+  double bestScore = 0;
+  std::pair<int, bool> returnValue;
+
+  int column = _myPosition.first;
+  int line = _myPosition.second;
+
+  if (line + 1 < _N && getDanger(line + 1, column) != MaxDanger) {
+    score = getScore(line + 1, column, false);
+    if (score > bestScore) {
+      bestScore = score;
+      returnValue.first = RIGHT; returnValue.second = false;
+    }
+    score = getScore(line + 1, column, true);
+    if (score > bestScore) {
+      bestScore = score;
+      returnValue.first = RIGHT; returnValue.second = true;
+    }
+  }
+  if (line - 1 >= 0 && getDanger(line - 1, column) != MaxDanger) {
+    score = getScore(line - 1, column, false);
+    if (score > bestScore) {
+      bestScore = score;
+      returnValue.first = LEFT; returnValue.second = false;
+    }
+    score = getScore(line - 1, column, true);
+    if (score > bestScore) {
+      bestScore = score;
+      returnValue.first = LEFT; returnValue.second = true;
+    }
+  }
+  if (column + 1 < _M && getDanger(line, column + 1) != MaxDanger)  {
+    score = getScore(line, column + 1, false);
+    if (score > bestScore) {
+      bestScore = score;
+      returnValue.first = DOWN; returnValue.second = false;
+    }
+    score = getScore(line, column + 1, true);
+    if (score > bestScore) {
+      bestScore = score;
+      returnValue.first = DOWN; returnValue.second = true;
+    }
+  }
+  if (column - 1 >= 0 && getDanger(line, column - 1) != MaxDanger) {
+    score = getScore(line, column - 1, false);
+    if (score > bestScore) {
+      bestScore = score;
+      returnValue.first = UP; returnValue.second = false;
+    }
+    score = getScore(line, column - 1, true);
+    if (score > bestScore) {
+      bestScore = score;
+      returnValue.first = UP; returnValue.second = true;
+    }
+  }
+
+  if (getDanger(line, column) != MaxDanger) {
+    score = getScore(line, column, false);
+    if (score > bestScore) {
+      bestScore = score;
+      returnValue.first = STAY; returnValue.second = false;
+    }
+    score = getScore(line, column, true);
+    if (score > bestScore) {
+      bestScore = score;
+      returnValue.first = STAY; returnValue.second = true;
+    }
+  }
+
+  return returnValue;
+}
+
+double Game::getScore(int x, int y, bool bomb) {
+  return 1;
+}
+
+double Game::area(int x, int y) {
+  int width = _M / 4;
+  int height = _N / 4;
+
+  int ox = _opPosition.first;
+  int oy = _opPosition.second;
+
+  int countMyBlocks = 0, countOpBlocks = 0;
+
+  for (int dy = height; dy <= height; ++dy)
+    for (int dx = width; dx <= width; ++dx)
+      if (0 <= x + dx && x + dx < _M &&
+          0 <= y + dy && y + dy < _N)
+          ++countMyBlocks;
+
+  for (int dy = height; dy <= height; ++dy)
+    for (int dx = width; dx <= width; ++dx)
+      if (0 <= ox + dx && ox + dx < _M &&
+          0 <= oy + dy && oy + dy < _N)
+          ++countOpBlocks;
+
+    return (double)countMyBlocks / countOpBlocks;
+}
+
+double Game::survival(int x, int y) {
+  int xStart = x - RADIUS + 1;
+  int yStart = y - RADIUS + 1;
+  int sum = 0;
+
+  calculateEstimatedExplosionTime();
+
+  for (int i = yStart; i < y + RADIUS; i++) {
+    for (int j = xStart; j < x + RADIUS; j++) {
+      if (i < 0 || j < 0 || i >= _N || j >= _M) {
+        continue;
+      }
+
+      sum += 11 - getEstimatedExplosionTime(j, i);
+    }
+  }
+
+  return (double)sum / RADIUS * RADIUS;
 }
