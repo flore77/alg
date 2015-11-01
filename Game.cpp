@@ -33,7 +33,7 @@ void Game::readMatrix(int * bytestream) {
 }
 
 bool Game::isWall(int x, int y) {
-	return (_board[y * _M + x] & (1 << WALL_POSITION)) != 0;
+	return ((_board[y * _M + x] & (1 << WALL_POSITION)) != 0) || (getExplosionTime(x, y) != 0);
 }
 
 int Game::getFlameDuration(int x, int y) {
@@ -47,7 +47,7 @@ int Game::getExplosionTime(int x, int y) {
 bool Game::isValidMove(int x, int y) {
   return 0 <= x && x < _M &&
          0 <= y && y < _N &&
-         !isWall(x, y);
+         !isWall(x, y) && getDanger(x, y) != MaxDanger;
 }
 
 std::pair<int, std::pair<int, int> > Game::BFS() {
@@ -114,47 +114,51 @@ std::pair<int, std::pair<int, int> > Game::BFS() {
 
 
 void Game::makeMove(int * buffer) {
-	findOpId();// SCHIMBAAAA
-	findPositions();
+  findOpId();
+  findPositions();
 
-  std::pair<int, std::pair<int, int> > bfsResult = BFS();
-  int distance = bfsResult.first;
-  std::pair<int, int> p = bfsResult.second;
-
-  std::cout << "Next Move: "  << p.first << " " << p.second << '\n';
+  /*std::cout << "Next Move: "  << p.first << " " << p.second << '\n';
   std::cout << "Distance: " << distance << "\n";
 
   std::cout << "myPosition(" << _myPosition.first << ", " << _myPosition.second << ")\n";
-	std::cout << "opPosition(" << _opPosition.first << ", " << _opPosition.second << ")\n";
+  std::cout << "opPosition(" << _opPosition.first << ", " << _opPosition.second << ")\n";*/
 
-	*buffer = _moveCounter;
-	++buffer;
+  *buffer = _moveCounter;
+  ++buffer;
 
-	if (rand() % 10 < 3) {
-		//*buffer = 1 << 31;
-	}
+  calculateDanger();
 
-  if (_myPosition == _opPosition) {
-    *buffer = STAY;
-  }
-  else if (_myPosition.first == p.first) {
-    if (_myPosition.second < p.second) {
-      *buffer = DOWN;
+  std::pair<int, std::pair<int, int> > bfsResult = BFS();
+  _distOp = bfsResult.first;
+  std::pair<int, int> p = bfsResult.second;
+
+  if (_distOp > BARRIER) {
+    if (_myPosition.first == p.first) {
+      if (_myPosition.second < p.second) {
+        *buffer = DOWN;
+      }
+      else {
+        *buffer = UP;
+      }
     }
     else {
-      *buffer = UP;
+      if (_myPosition.first < p.first) {
+        *buffer = RIGHT;
+      }
+      else {
+        *buffer = LEFT;
+      }
     }
   }
   else {
-    if (_myPosition.first < p.first) {
-      *buffer = RIGHT;
-    }
-    else {
-      *buffer = LEFT;
-    }
+    std::pair<int, bool> pr = getBestMove();
+    std::cout << "Miscare: " << pr.first << std::endl;
+    *buffer = pr.first | (1 << 31);
   }
 
-	++_moveCounter;
+
+
+  ++_moveCounter;
 }
 
 void Game::prettyPrint() {
@@ -168,7 +172,12 @@ void Game::prettyPrint() {
 	if (count == 1) return;
 	for (int i = 0; i < _N; ++i) {
 		for (int j = 0; j < _M; ++j) {
-			if (isWall(j, i)) {
+			if (getFlameDuration(j, i) > 0) {
+        std::cout << '#';
+      } else if (getExplosionTime(j, i) > 0) {
+        std::cout << 'B';
+      }
+      else if (isWall(j, i)) {
 				std::cout << 'W';
 			}
 		  else if ((_board[i * _M + j] & 0x0000FF) == 0) {
@@ -359,7 +368,7 @@ std::pair<int, bool> Game::getBestMove() {
 }
 
 double Game::getScore(int x, int y, bool bomb) {
-  return 1;
+  return area(x, y) * 0.3 + 1 / survival(x, y);
 }
 
 double Game::area(int x, int y) {
@@ -371,14 +380,14 @@ double Game::area(int x, int y) {
 
   int countMyBlocks = 0, countOpBlocks = 0;
 
-  for (int dy = height; dy <= height; ++dy)
-    for (int dx = width; dx <= width; ++dx)
+  for (int dy = -height; dy <= height; ++dy)
+    for (int dx = -width; dx <= width; ++dx)
       if (0 <= x + dx && x + dx < _M &&
           0 <= y + dy && y + dy < _N)
           ++countMyBlocks;
 
-  for (int dy = height; dy <= height; ++dy)
-    for (int dx = width; dx <= width; ++dx)
+  for (int dy = -height; dy <= height; ++dy)
+    for (int dx = -width; dx <= width; ++dx)
       if (0 <= ox + dx && ox + dx < _M &&
           0 <= oy + dy && oy + dy < _N)
           ++countOpBlocks;

@@ -23,6 +23,8 @@
 
 #define MAX_DISTANCE 100000
 
+#define BARRIER 5
+
 class Game {
 public:
 	Game();
@@ -75,6 +77,7 @@ public:
 	int _maxMove;
 	int _N, _M;
 	int _board[MaxS];
+  int _distOp;
 };
 
 #endif
