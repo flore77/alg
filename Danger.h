@@ -11,9 +11,11 @@ public:
 	Danger(Game&);
 	virtual ~Danger();
 
-	void calculate();
+	void calculateDanger();
 	int getDanger(int, int);
 
+	void calculateEstimatedExplosionTime();
+	int getEstimatedExplosionTime(int, int);
 private:
   Game _game;
 	int _N, _M;
