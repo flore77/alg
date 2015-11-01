@@ -6,14 +6,13 @@ inline int min(int a, int b) {
 	return a < b ? a : b;
 }
 
-Danger::Danger(Game& game) {0
+Danger::Danger(Game& game) : _game(game) {
 	int i, j;
 	for (i = 0; i < MaxDim; i++) {
 		for (j = 0; j < MaxDim; j++) {
 			_dangerMatrix[i][j] = 0;
 		}
 	}
-	_game = game;
 	_N = _game.getN(); _M = _game.getM();
 }
 

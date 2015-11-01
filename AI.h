@@ -15,8 +15,8 @@ private:
 	double area(int, int);
 	double survival(int, int);
 
-	Game _game;
-	Danger _danger;
+	Game& _game;
+	Danger& _danger;
 };
 
 #endif
