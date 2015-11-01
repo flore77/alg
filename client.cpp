@@ -2,6 +2,8 @@
 #include <string>
 #include <string.h>
 #include <stdlib.h>
+#include <ctime>
+//#include <conio.h>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -11,7 +13,7 @@
 #include "helpers.h"
 
 #define IP "192.168.56.101"
-#define PORT 10001
+#define PORT 10004
 
 #define N (37*37*4)
 
@@ -152,8 +154,12 @@ int main(int argc, char *argv[]) {
 									g.readMatrix((int *)(buffer + 20));
 									g.prettyPrint();
 
+									clock_t now = time(0);		
 									g.makeMove((int *)buffer);
-									printf("trimit %d%d\n", *((int*)buffer),*((int*)buffer+1));
+									//printf("time elapsed = %d\n", time(0) - now);
+
+									
+									printf("trimit %d-%d\n", *((int*)buffer),*((int*)buffer+1));
 									if (send_all(serverFd, buffer, 8, 0) < 0) {
 										log("Eroare la send_all");
 										error("Eroare la send_all");

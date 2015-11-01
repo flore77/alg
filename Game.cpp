@@ -99,7 +99,7 @@ std::pair<int, std::pair<int, int> > Game::BFS() {
       x = current.first + mx[i];
       y = current.second + my[i];
 
-      if (isValidMove(x, y) && !visited[y][x]) {
+      if (!visited[y][x] && isValidMove(x, y)) {
         q.push(std::make_pair(x, y));
 
         visited[y][x] = true;
@@ -126,9 +126,11 @@ void Game::makeMove(int * buffer) {
   *buffer = _moveCounter;
   ++buffer;
 
+	calculateEstimatedExplosionTime();
   calculateDanger();
 
   std::pair<int, std::pair<int, int> > bfsResult = BFS();
+	std::cout << "BFS out: dist =" << bfsResult.first << "pair(" << bfsResult.second.first << ", " <<bfsResult.first<<")" << std::endl;
   _distOp = bfsResult.first;
   std::pair<int, int> p = bfsResult.second;
 
@@ -149,10 +151,12 @@ void Game::makeMove(int * buffer) {
         *buffer = LEFT;
       }
     }
+
+    std::cout << "Miscare fara bomba: " << *buffer << std::endl;
   }
   else {
     std::pair<int, bool> pr = getBestMove();
-    std::cout << "Miscare: " << pr.first << std::endl;
+    std::cout << "Miscare cu bomba: " << pr.first << std::endl;
     *buffer = pr.first | (1 << 31);
   }
 
@@ -302,67 +306,33 @@ std::pair<int, bool> Game::getBestMove() {
   int column = _myPosition.first;
   int line = _myPosition.second;
 
-  if (line + 1 < _N && getDanger(line + 1, column) != MaxDanger) {
-    score = getScore(line + 1, column, false);
-    if (score > bestScore) {
-      bestScore = score;
-      returnValue.first = RIGHT; returnValue.second = false;
-    }
-    score = getScore(line + 1, column, true);
-    if (score > bestScore) {
-      bestScore = score;
-      returnValue.first = RIGHT; returnValue.second = true;
-    }
-  }
-  if (line - 1 >= 0 && getDanger(line - 1, column) != MaxDanger) {
-    score = getScore(line - 1, column, false);
-    if (score > bestScore) {
-      bestScore = score;
-      returnValue.first = LEFT; returnValue.second = false;
-    }
-    score = getScore(line - 1, column, true);
-    if (score > bestScore) {
-      bestScore = score;
-      returnValue.first = LEFT; returnValue.second = true;
-    }
-  }
-  if (column + 1 < _M && getDanger(line, column + 1) != MaxDanger)  {
-    score = getScore(line, column + 1, false);
-    if (score > bestScore) {
-      bestScore = score;
-      returnValue.first = DOWN; returnValue.second = false;
-    }
-    score = getScore(line, column + 1, true);
-    if (score > bestScore) {
-      bestScore = score;
-      returnValue.first = DOWN; returnValue.second = true;
-    }
-  }
-  if (column - 1 >= 0 && getDanger(line, column - 1) != MaxDanger) {
-    score = getScore(line, column - 1, false);
-    if (score > bestScore) {
-      bestScore = score;
-      returnValue.first = UP; returnValue.second = false;
-    }
-    score = getScore(line, column - 1, true);
-    if (score > bestScore) {
-      bestScore = score;
-      returnValue.first = UP; returnValue.second = true;
-    }
-  }
+	int dx[] = { 0, -1, 0,  1 , 0};
+	int dy[] = { 1,  0, -1, 0, 0};
+	int moves[] = { DOWN, LEFT, UP, RIGHT, STAY };
 
-  if (getDanger(line, column) != MaxDanger) {
-    score = getScore(line, column, false);
-    if (score > bestScore) {
-      bestScore = score;
-      returnValue.first = STAY; returnValue.second = false;
-    }
-    score = getScore(line, column, true);
-    if (score > bestScore) {
-      bestScore = score;
-      returnValue.first = STAY; returnValue.second = true;
-    }
-  }
+	for (int k = 0; k < 5; ++k) {
+		if (0 <=   line + dy[k] &&   line + dy[k] < _N &&
+		    0 <= column + dx[k] && column + dx[k] < _M &&
+				!isWall(column + dx[k], line + dy[k])      &&
+			  getDanger(column + dx[k], line + dy[k]) != MaxDanger) {
+				
+					score = getScore(column + dx[k], line + dy[k], false);
+					if (score > bestScore) {
+						bestScore = score;
+						returnValue.first = moves[k];
+						returnValue.second = false;
+					}
+
+					if (!isWall(column + dx[k], line + dy[k]))
+						score = getScore(column + dx[k], line + dy[k], true);
+						
+					if (score > bestScore) {
+						bestScore = score;
+						returnValue.first = moves[k];
+						returnValue.second = true;
+					}
+				}
+	}
 
   return returnValue;
 }
