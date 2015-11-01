@@ -80,7 +80,7 @@ std::pair<int, int> Game::nextMove() {
           index = parents[index];
         }
 
-        return std::make_pair(index / _M, index % _M);
+        return std::make_pair(index % _M, index / _M);
     }
 
     for (int i = 0; i < NR_MOVES; i++) {
@@ -105,7 +105,7 @@ void Game::makeMove(int * buffer) {
 	findPositions();
 
   std::pair<int, int> p = nextMove();
-  std::cout << "Next Move: "  << p.second << " " << p.first << '\n';
+  std::cout << "Next Move: "  << p.first << " " << p.second << '\n';
 
 	*buffer = _moveCounter;
 	++buffer;
@@ -114,8 +114,22 @@ void Game::makeMove(int * buffer) {
 		//*buffer = 1 << 31;
 	}
 
-
-	*buffer = (rand() % 4);
+  if (_myPosition.first == p.first) {
+    if (_myPosition.second < p.second) {
+      *buffer = DOWN;
+    }
+    else {
+      *buffer = UP;
+    }
+  }
+  else {
+    if (_myPosition.first < p.first) {
+      *buffer = RIGHT;
+    }
+    else {
+      *buffer = LEFT;
+    }
+  }
 
 	++_moveCounter;
 }

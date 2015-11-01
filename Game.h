@@ -11,6 +11,12 @@
 #define MY {0, 0, 1, -1}
 #define NR_MOVES 4
 
+#define DOWN 4
+#define UP 2
+#define RIGHT 1
+#define LEFT 3
+#define STAY 0
+
 
 class Game {
 public:
