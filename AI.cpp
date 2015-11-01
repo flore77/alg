@@ -1,6 +1,6 @@
 
 
-double survival(int x, int y) {
+double AI::survival(int x, int y) {
   int xStart = x - RADIUS + 1;
   int yStart = y - RADIUS + 1;
   int sum = 0;
