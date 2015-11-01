@@ -44,6 +44,9 @@ int Game::getExplosionTime(int x, int y) {
 }
 
 void Game::makeMove(int * buffer) {
+	findOpId();// SCHIMBAAAA
+	findPositions();
+
 	*buffer = _moveCounter;
 	++buffer;
 
@@ -81,6 +84,29 @@ void Game::prettyPrint() {
 		}
 		std::cout << '\n';
 	}
+
+	std::cout << "myPosition(" << _myPosition.first << ", " << _myPosition.second << ")\n";
+	std::cout << "opPosition(" << _opPosition.first << ", " << _opPosition.second << ")\n";
+}
+
+void Game::findPositions() {
+	for (int i = 0; i < _N; ++i)
+		for (int j = 0; j < _M; ++j)
+			if (((_board[i * _M + j] & 0x000000ff) & (1 << (_myId - 1))) != 0)
+				_myPosition = std::make_pair(j, i);
+			else if ((_board[i * _M + j] & 0x000000ff) != 0)
+				_opPosition = std::make_pair(j, i);
+}
+
+void Game::findOpId() {
+	int mask = 0;
+	for (int i = 0; i < _N; ++i)
+		for (int j = 0; j < _M; ++j)
+			mask = mask | (_board[i * _M + j]);
+
+	mask &= 0x000000ff;
+	mask ^= (1 << (_myId - 1));
+	_opId = mask;
 }
 
 int Game::getN() {

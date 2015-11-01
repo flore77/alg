@@ -10,6 +10,9 @@
 #include "Game.h"
 #include "helpers.h"
 
+#define IP "192.168.56.101"
+#define PORT 10001
+
 #define N (37*37*4)
 
 using namespace std;
@@ -47,8 +50,8 @@ int main(int argc, char *argv[]) {
   fd_set readFds, auxReadFds;
 
   // Setting the connection parameters.
-  strcpy(ip, argv[1]);
-  port = atoi(argv[2]);
+  strcpy(ip, IP);
+  port = PORT;
 
   // Open a TCP socket.
   if ((serverFd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
