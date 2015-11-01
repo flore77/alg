@@ -17,7 +17,7 @@ public:
 	void calculateEstimatedExplosionTime();
 	int getEstimatedExplosionTime(int, int);
 private:
-  Game _game;
+  Game & _game;
 	int _N, _M;
 	int _dangerMatrix[MaxDim][MaxDim];
 };
