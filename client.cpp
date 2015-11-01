@@ -23,10 +23,10 @@ using namespace std;
  *
  */
 
-FILE * mylog = fopen("mylog.txt", "a");
+//FILE * mylog = fopen("mylog.txt", "a");
 
 void log(string s) {
-	fprintf(mylog, "%s\n", (char *)s.c_str());
+	//fprintf(mylog, "%s\n", (char *)s.c_str());
 }
 
 int send_all(int socket, const char *buffer, size_t length, int flags)
@@ -50,8 +50,11 @@ int main(int argc, char *argv[]) {
   fd_set readFds, auxReadFds;
 
   // Setting the connection parameters.
-  strcpy(ip, IP);
-  port = PORT;
+  strcpy(ip, argv[1]);
+  port = atoi(argv[2]);
+
+	//strcpy(ip, IP);
+	//port = PORT;
 
   // Open a TCP socket.
   if ((serverFd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -64,10 +67,14 @@ int main(int argc, char *argv[]) {
   server.sin_port = htons(port);
   inet_aton(ip, &server.sin_addr);
 
+	printf("before connect\n");
+
   // Connect to the server.
   if ((connect(serverFd, (struct sockaddr*) &server, sizeof(server))) < 0) {
     error("Cannot connect to server!");
   }
+
+	printf("after connect\n");
 
   // Initializing the read file descriptors.
   FD_ZERO(&readFds);
@@ -90,16 +97,68 @@ int main(int argc, char *argv[]) {
       error("Cannot listen for incoming data!");
     }
 
-    for (int i = 0; i <= maxFd; i++) {
 
       // If the i socket is in the read set, this means that there is some data
       // to be read on this socket.
-      if (FD_ISSET(i, &auxReadFds)) {
+      if (FD_ISSET(serverFd, &auxReadFds)) {
 
         // If the socket descriptor is equal to the server descriptor, there is
         // data from our server.
-        if (i == serverFd) {
-					received = recv(i, buffer + bytes, N, 0);
+					
+					if (firstTime) {
+						while (received < 4) {
+							received += recv(serverFd, buffer + received, 1, 0);
+						}
+
+						g.readId((int *) buffer);
+
+						received = 0;
+						firstTime = false;
+					} else {
+						if (secondTime) {
+							while (received < 20) {
+								received += recv(serverFd, buffer + received, 1, 0);
+							}
+							g.readHeader((int *)buffer);
+
+							bytesToRead = (5 + g.getN() * g.getM()) * 4;
+							
+							while (received < bytesToRead) {
+								received += recv(serverFd, buffer + received, 1, 0);
+							}
+
+							g.readMatrix((int *)(buffer + 20));
+							g.prettyPrint();
+								
+							g.makeMove((int *)buffer);
+							printf("trimit %d%d\n", *((int*)buffer),*((int*)buffer+1));
+
+							secondTime = false;
+						} else {
+							received = 0;
+							while (received < bytesToRead) {
+								received += recv(serverFd, buffer + received, 1, 0);
+								if (received == 0) {
+									printf("S-a terminat cu bine!\n");
+									return 0;
+								}
+							}
+							g.readMatrix((int *)(buffer + 20));
+							g.prettyPrint();
+								
+							g.makeMove((int *)buffer);
+							printf("trimit %d%d\n", *((int*)buffer),*((int*)buffer+1));
+							
+							if (send_all(serverFd, buffer, 8, 0) < 0) {
+								error("Eroare la send_all");
+								return -1;
+							}
+						}
+					}
+					
+					
+					
+					/*received = recv(serverFd, buffer + bytes, N, 0);
 					bytes += received;
 
 					if (received == 0) {
@@ -119,9 +178,16 @@ int main(int argc, char *argv[]) {
 								if (bytes < 20) continue;
 								
 								g.readHeader((int *)buffer);
-								bytesToRead = 20 + g.getN() * g.getM();
+
+								printf("N = %d\nM = %d\n", g.getN(), g.getM());
+
+								bytesToRead = 20 + g.getN() * g.getM() * 4;
 					
 								if (bytes >= bytesToRead) {
+								
+									printf("In second time\n");
+									printf("bytes = %d\nbytesToRead = %d\n", bytes, bytesToRead);
+
 									bytes = 0;
 									
 									g.readMatrix((int *)(buffer + 20));
@@ -146,6 +212,8 @@ int main(int argc, char *argv[]) {
 
 								secondTime = false;
 							} else {
+								printf("In third time\n");
+
 								if (bytes >= bytesToRead) {
 									bytes = 0;
 									g.readHeader((int *)buffer);
@@ -170,11 +238,7 @@ int main(int argc, char *argv[]) {
 									}
 								}
 							}	
-						}
-						
-					}
-        }
-      }
-    }
+						}*/
+					}		
   }
 }

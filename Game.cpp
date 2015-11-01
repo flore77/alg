@@ -3,6 +3,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include "Game.h"
+#include <deque>
 
 int _dangerMatrix[37][37];
 
@@ -51,7 +52,7 @@ bool Game::isValidMove(int x, int y) {
 }
 
 std::pair<int, std::pair<int, int> > Game::BFS() {
-  std::queue<std::pair<int, int> > q;
+  std::deque<std::pair<int, int> > q;
   int mx[NR_MOVES] = MX;
   int my[NR_MOVES] = MY;
   int parents[_N * _M];
@@ -71,14 +72,14 @@ std::pair<int, std::pair<int, int> > Game::BFS() {
     }
   }
 
-  q.push(_myPosition);
+  q.push_back(std::pair<int, int>(_myPosition));
 
   visited[_myPosition.second][_myPosition.first] = true;
   distances[_myPosition.second * _M + _myPosition.first] = 0;
 
   while (!q.empty()) {
     std::pair<int, int> current = q.front();
-    q.pop();
+    q.pop_front();
 
     int prod = current.second * _M + current.first;
 
@@ -100,7 +101,7 @@ std::pair<int, std::pair<int, int> > Game::BFS() {
       y = current.second + my[i];
 
       if (!visited[y][x] && isValidMove(x, y)) {
-        q.push(std::make_pair(x, y));
+        q.push_back(std::make_pair(x, y));
 
         visited[y][x] = true;
         distances[y *_M + x] = distances[prod] + 1;
@@ -114,7 +115,9 @@ std::pair<int, std::pair<int, int> > Game::BFS() {
 
 
 void Game::makeMove(int * buffer) {
-  findOpId();
+  static int counter = 0;
+
+	findOpId();
   findPositions();
 
   /*std::cout << "Next Move: "  << p.first << " " << p.second << '\n';
@@ -133,6 +136,8 @@ void Game::makeMove(int * buffer) {
 	std::cout << "BFS out: dist =" << bfsResult.first << "pair(" << bfsResult.second.first << ", " <<bfsResult.first<<")" << std::endl;
   _distOp = bfsResult.first;
   std::pair<int, int> p = bfsResult.second;
+
+		
 
   if (_distOp > BARRIER) {
     if (_myPosition.first == p.first) {
@@ -158,8 +163,9 @@ void Game::makeMove(int * buffer) {
     std::pair<int, bool> pr = getBestMove();
     std::cout << "Miscare cu bomba: " << pr.first << std::endl;
     *buffer = pr.first;
-		if (pr.second)
+		if (pr.second || ((counter++) % 3 == 0)) {
 			*buffer = *buffer | (1 << 31);
+		}
   }
 
 
@@ -343,12 +349,12 @@ double Game::getScore(int x, int y, bool bomb) {
 	double myarea = area(x, y);
 	double mysurvival = survival(x, y);
 	std::cout << "myarea = " << myarea << '\t' << "mysurvival = " << mysurvival << std::endl;
-  return area(x, y) * 0.3 + 1 / survival(x, y);
+  return area(x, y) * 0.5 + 200.0 / survival(x, y);
 }
 
 double Game::area(int x, int y) {
-  int width = _M / 4;
-  int height = _N / 4;
+  int width = 3;//_M / 4;
+  int height =3;// _N / 4;
 
   int ox = _opPosition.first;
   int oy = _opPosition.second;
