@@ -1,8 +1,11 @@
 #ifndef __GAME_H__
 #define __GAME_H__
 
+#include <utility>
+
 #define WALL_POSITION 15
 #define MaxS (37*37)
+
 
 class Game {
 public:
@@ -19,6 +22,10 @@ public:
 	int getN();
 
 	int getM();
+
+	void makeMove(int * buffer);
+	void findPositions();
+	void findOpId();
 //private:
 
 	bool isWall(int x, int y);
@@ -27,6 +34,10 @@ public:
 
 	int getExplosionTime(int x, int y);
 
+	std::pair<int, int> _myPosition;
+	std::pair<int, int> _opPosition;
+	int _moveCounter;	
+	int _opId;
 	int _myId;
 	int _currentMove;
 	int _aggresiveModeStart;

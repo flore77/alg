@@ -10,6 +10,9 @@
 #include "Game.h"
 #include "helpers.h"
 
+#define IP "192.168.56.101"
+#define PORT 10001
+
 #define N (37*37*4)
 
 using namespace std;
@@ -26,6 +29,20 @@ void log(string s) {
 	fprintf(mylog, "%s\n", (char *)s.c_str());
 }
 
+int send_all(int socket, const char *buffer, size_t length, int flags)
+{
+    ssize_t n;
+    const char *p = buffer;
+    while (length > 0)
+    {
+        n = send(socket, p, length, flags);
+        if (n <= 0) break;
+        p += n;
+        length -= n;
+    }
+    return (n <= 0) ? -1 : 0;
+}
+
 int main(int argc, char *argv[]) {
   int serverFd, port, maxFd;
   struct sockaddr_in server;
@@ -33,8 +50,8 @@ int main(int argc, char *argv[]) {
   fd_set readFds, auxReadFds;
 
   // Setting the connection parameters.
-  strcpy(ip, argv[1]);
-  port = atoi(argv[2]);
+  strcpy(ip, IP);
+  port = PORT;
 
   // Open a TCP socket.
   if ((serverFd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -109,7 +126,15 @@ int main(int argc, char *argv[]) {
 									
 									g.readMatrix((int *)(buffer + 20));
 									g.prettyPrint();
-									
+								
+									g.makeMove((int *)buffer);
+									printf("trimit %d%d\n", *((int*)buffer),*((int*)buffer+1));
+									if (send_all(serverFd, buffer, 8, 0) < 0) {
+										log("Eroare la send_all");
+										error("Eroare la send_all");
+										return -1;
+									}
+
 									if (bytes > bytesToRead) {
 										log("Ne-a dat mai mult decat matricea");
 										int k = 0;
@@ -126,6 +151,14 @@ int main(int argc, char *argv[]) {
 									g.readHeader((int *)buffer);
 									g.readMatrix((int *)(buffer + 20));
 									g.prettyPrint();
+
+									g.makeMove((int *)buffer);
+									printf("trimit %d%d\n", *((int*)buffer),*((int*)buffer+1));
+									if (send_all(serverFd, buffer, 8, 0) < 0) {
+										log("Eroare la send_all");
+										error("Eroare la send_all");
+										return -1;
+									}
 									
 									if (bytes > bytesToRead) {
 										log("Ne-a dat mai mult decat matricea");

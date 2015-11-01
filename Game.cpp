@@ -1,8 +1,13 @@
 #include <iostream>
 #include <string.h>
+#include <time.h>
+#include <stdlib.h>
 #include "Game.h"
 
-Game::Game() { }
+
+Game::Game() { 
+	srand(time(NULL));
+}
 
 Game::Game(int N, int M) : _N(N), _M(M) { }
 
@@ -38,24 +43,70 @@ int Game::getExplosionTime(int x, int y) {
 	return (_board[y * _M + x] >> 24) & 0x000000FF;
 }
 
+void Game::makeMove(int * buffer) {
+	findOpId();// SCHIMBAAAA
+	findPositions();
+
+	*buffer = _moveCounter;
+	++buffer;
+
+	if (rand() % 10 < 3) {
+		//*buffer = 1 << 31;
+	}
+
+	
+	*buffer = (rand() % 4);
+
+	++_moveCounter;
+}
+
 void Game::prettyPrint() {
 	static int count = 0;
 	std::cout << _currentMove << ' ' << _aggresiveModeStart << ' ' << _maxMove << std::endl;
 	std::cout << _N << ' ' << _M << std::endl;
 	count++;
 
+	printf("myId = %d\n", _myId);
+
 	if (count == 1) return;
 	for (int i = 0; i < _N; ++i) {
 		for (int j = 0; j < _M; ++j) {
 			if (isWall(j, i)) {
 				std::cout << 'W';
-			} else {
-				std::cout << ' ';
 			}
-			std::cout << ' ';
+		  else if ((_board[i * _M + j] & 0x0000FF) == 0) {
+				std::cout << ' ';
+			} else if ((_board[i * _M + j] & (1 << (_myId - 1))) != 0) {
+				std::cout << 'E';
+			} else {
+				std::cout << _board[i * _M + j];
+			}
 		}
 		std::cout << '\n';
 	}
+
+	std::cout << "myPosition(" << _myPosition.first << ", " << _myPosition.second << ")\n";
+	std::cout << "opPosition(" << _opPosition.first << ", " << _opPosition.second << ")\n";
+}
+
+void Game::findPositions() {
+	for (int i = 0; i < _N; ++i)
+		for (int j = 0; j < _M; ++j)
+			if (((_board[i * _M + j] & 0x000000ff) & (1 << (_myId - 1))) != 0)
+				_myPosition = std::make_pair(j, i);
+			else if ((_board[i * _M + j] & 0x000000ff) != 0)
+				_opPosition = std::make_pair(j, i);
+}
+
+void Game::findOpId() {
+	int mask = 0;
+	for (int i = 0; i < _N; ++i)
+		for (int j = 0; j < _M; ++j)
+			mask = mask | (_board[i * _M + j]);
+
+	mask &= 0x000000ff;
+	mask ^= (1 << (_myId - 1));
+	_opId = mask;
 }
 
 int Game::getN() {
