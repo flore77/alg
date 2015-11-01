@@ -2,8 +2,6 @@
 #include <string>
 #include <string.h>
 #include <stdlib.h>
-#include <ctime>
-//#include <conio.h>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -154,10 +152,7 @@ int main(int argc, char *argv[]) {
 									g.readMatrix((int *)(buffer + 20));
 									g.prettyPrint();
 
-									clock_t now = time(0);		
 									g.makeMove((int *)buffer);
-									//printf("time elapsed = %d\n", time(0) - now);
-
 									
 									printf("trimit %d-%d\n", *((int*)buffer),*((int*)buffer+1));
 									if (send_all(serverFd, buffer, 8, 0) < 0) {

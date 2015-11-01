@@ -157,7 +157,9 @@ void Game::makeMove(int * buffer) {
   else {
     std::pair<int, bool> pr = getBestMove();
     std::cout << "Miscare cu bomba: " << pr.first << std::endl;
-    *buffer = pr.first | (1 << 31);
+    *buffer = pr.first;
+		if (pr.second)
+			*buffer = *buffer | (1 << 31);
   }
 
 
@@ -338,6 +340,9 @@ std::pair<int, bool> Game::getBestMove() {
 }
 
 double Game::getScore(int x, int y, bool bomb) {
+	double myarea = area(x, y);
+	double mysurvival = survival(x, y);
+	std::cout << "myarea = " << myarea << '\t' << "mysurvival = " << mysurvival << std::endl;
   return area(x, y) * 0.3 + 1 / survival(x, y);
 }
 
