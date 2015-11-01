@@ -49,27 +49,37 @@ bool Game::isValidMove(int x, int y) {
          !isWall(x, y);
 }
 
-std::pair<int, int> Game::nextMove() {
+std::pair<int, std::pair<int, int> > Game::BFS() {
   std::queue<std::pair<int, int> > q;
   int mx[NR_MOVES] = MX;
   int my[NR_MOVES] = MY;
   int parents[_N * _M];
+  int distances[_N * _M];
   bool visited[_N][_M];
-  int x, y;
+  int x, y, prod;
+
+  if (_myPosition == _opPosition) {
+    return std::make_pair(0, _myPosition);
+  }
 
   for (int i = 0; i < _N; i++) {
     for (int j = 0; j < _M; j++) {
       visited[i][j] = false;
       parents[i * _M + j] = -1;
+      distances[i * _M + j] = MAX_DISTANCE;
     }
   }
 
   q.push(_myPosition);
+
   visited[_myPosition.second][_myPosition.first] = true;
+  distances[_myPosition.second * _M + _myPosition.first] = 0;
 
   while (!q.empty()) {
     std::pair<int, int> current = q.front();
     q.pop();
+
+    int prod = current.second * _M + current.first;
 
     if (current.first == _opPosition.first &&
         current.second == _opPosition.second) {
@@ -80,7 +90,8 @@ std::pair<int, int> Game::nextMove() {
           index = parents[index];
         }
 
-        return std::make_pair(index % _M, index / _M);
+        return std::make_pair(distances[prod],
+                                std::make_pair(index % _M, index / _M));
     }
 
     for (int i = 0; i < NR_MOVES; i++) {
@@ -91,12 +102,13 @@ std::pair<int, int> Game::nextMove() {
         q.push(std::make_pair(x, y));
 
         visited[y][x] = true;
-        parents[y * _M + x] = current.second * _M + current.first;
+        distances[y *_M + x] = distances[prod] + 1;
+        parents[y * _M + x] = prod;
       }
     }
   }
 
-  return std::make_pair(-1, -1);
+  return std::make_pair(-1, std::make_pair(-1, -1));
 }
 
 
@@ -104,8 +116,12 @@ void Game::makeMove(int * buffer) {
 	findOpId();// SCHIMBAAAA
 	findPositions();
 
-  std::pair<int, int> p = nextMove();
+  std::pair<int, std::pair<int, int> > bfsResult = BFS();
+  int distance = bfsResult.first;
+  std::pair<int, int> p = bfsResult.second;
+
   std::cout << "Next Move: "  << p.first << " " << p.second << '\n';
+  std::cout << "Distance: " << distance << "\n";
 
   std::cout << "myPosition(" << _myPosition.first << ", " << _myPosition.second << ")\n";
 	std::cout << "opPosition(" << _opPosition.first << ", " << _opPosition.second << ")\n";
@@ -117,7 +133,10 @@ void Game::makeMove(int * buffer) {
 		//*buffer = 1 << 31;
 	}
 
-  if (_myPosition.first == p.first) {
+  if (_myPosition == _opPosition) {
+    *buffer = STAY;
+  }
+  else if (_myPosition.first == p.first) {
     if (_myPosition.second < p.second) {
       *buffer = DOWN;
     }
@@ -164,12 +183,18 @@ void Game::prettyPrint() {
 }
 
 void Game::findPositions() {
-	for (int i = 0; i < _N; ++i)
-		for (int j = 0; j < _M; ++j)
-			if (((_board[i * _M + j] & 0x000000ff) & (1 << (_myId - 1))) != 0)
-				_myPosition = std::make_pair(j, i);
-			else if ((_board[i * _M + j] & 0x000000ff) != 0)
-				_opPosition = std::make_pair(j, i);
+	for (int i = 0; i < _N; ++i) {
+		for (int j = 0; j < _M; ++j) {
+      if ((_board[i * _M + j] & 0x000000ff) != 0) {
+
+        if (((_board[i * _M + j] & 0x000000ff) & (1 << (_myId - 1))) != 0)
+				  _myPosition = std::make_pair(j, i);
+
+        if (((_board[i * _M + j] & 0x000000ff) ^ (1 << (_myId - 1))) != 0)
+				  _opPosition = std::make_pair(j, i);
+      }
+    }
+  }
 }
 
 void Game::findOpId() {

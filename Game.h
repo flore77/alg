@@ -17,6 +17,7 @@
 #define LEFT 3
 #define STAY 0
 
+#define MAX_DISTANCE 100000
 
 class Game {
 public:
@@ -45,7 +46,7 @@ public:
 
 	int getExplosionTime(int x, int y);
 
-  std::pair<int, int> nextMove();
+  std::pair<int, std::pair<int, int> > BFS();
   bool isValidMove(int x, int y);
 
 	std::pair<int, int> _myPosition;
