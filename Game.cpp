@@ -107,6 +107,9 @@ void Game::makeMove(int * buffer) {
   std::pair<int, int> p = nextMove();
   std::cout << "Next Move: "  << p.first << " " << p.second << '\n';
 
+  std::cout << "myPosition(" << _myPosition.first << ", " << _myPosition.second << ")\n";
+	std::cout << "opPosition(" << _opPosition.first << ", " << _opPosition.second << ")\n";
+
 	*buffer = _moveCounter;
 	++buffer;
 
@@ -158,9 +161,6 @@ void Game::prettyPrint() {
 		}
 		std::cout << '\n';
 	}
-
-	std::cout << "myPosition(" << _myPosition.first << ", " << _myPosition.second << ")\n";
-	std::cout << "opPosition(" << _opPosition.first << ", " << _opPosition.second << ")\n";
 }
 
 void Game::findPositions() {
