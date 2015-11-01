@@ -5,7 +5,7 @@
 #include "Game.h"
 
 
-Game::Game() { 
+Game::Game() {
 	srand(time(NULL));
 }
 
@@ -43,9 +43,69 @@ int Game::getExplosionTime(int x, int y) {
 	return (_board[y * _M + x] >> 24) & 0x000000FF;
 }
 
+bool Game::isValidMove(int x, int y) {
+  return 0 <= x && x < _M &&
+         0 <= y && y < _N &&
+         !isWall(x, y);
+}
+
+std::pair<int, int> Game::nextMove() {
+  std::queue<std::pair<int, int> > q;
+  int mx[NR_MOVES] = MX;
+  int my[NR_MOVES] = MY;
+  int parents[_N * _M];
+  bool visited[_N][_M];
+  int x, y;
+
+  for (int i = 0; i < _N; i++) {
+    for (int j = 0; j < _M; j++) {
+      visited[i][j] = false;
+      parents[i * _M + j] = -1;
+    }
+  }
+
+  q.push(_myPosition);
+  visited[_myPosition.second][_myPosition.first] = true;
+
+  while (!q.empty()) {
+    std::pair<int, int> current = q.front();
+    q.pop();
+
+    if (current.first == _opPosition.first &&
+        current.second == _opPosition.second) {
+
+        int index = current.second * _M + current.first;
+
+        while (parents[index] != _myPosition.second * _M + _myPosition.first) {
+          index = parents[index];
+        }
+
+        return std::make_pair(index / _M, index % _M);
+    }
+
+    for (int i = 0; i < NR_MOVES; i++) {
+      x = current.first + mx[i];
+      y = current.second + my[i];
+
+      if (isValidMove(x, y) && !visited[y][x]) {
+        q.push(std::make_pair(x, y));
+
+        visited[y][x] = true;
+        parents[y * _M + x] = current.second * _M + current.first;
+      }
+    }
+  }
+
+  return std::make_pair(-1, -1);
+}
+
+
 void Game::makeMove(int * buffer) {
 	findOpId();// SCHIMBAAAA
 	findPositions();
+
+  std::pair<int, int> p = nextMove();
+  std::cout << "Next Move: "  << p.second << " " << p.first << '\n';
 
 	*buffer = _moveCounter;
 	++buffer;
@@ -54,7 +114,7 @@ void Game::makeMove(int * buffer) {
 		//*buffer = 1 << 31;
 	}
 
-	
+
 	*buffer = (rand() % 4);
 
 	++_moveCounter;

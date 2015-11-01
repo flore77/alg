@@ -2,9 +2,14 @@
 #define __GAME_H__
 
 #include <utility>
+#include <queue>
 
 #define WALL_POSITION 15
 #define MaxS (37*37)
+
+#define MX {1, -1, 0, 0}
+#define MY {0, 0, 1, -1}
+#define NR_MOVES 4
 
 
 class Game {
@@ -34,9 +39,12 @@ public:
 
 	int getExplosionTime(int x, int y);
 
+  std::pair<int, int> nextMove();
+  bool isValidMove(int x, int y);
+
 	std::pair<int, int> _myPosition;
 	std::pair<int, int> _opPosition;
-	int _moveCounter;	
+	int _moveCounter;
 	int _opId;
 	int _myId;
 	int _currentMove;
